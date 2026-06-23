@@ -1,0 +1,528 @@
+import { useState, useEffect, useRef } from "react";
+
+const SKILLS = {
+  "Analytics & Data": ["Power BI", "Excel (Advanced)", "Data Visualization", "Financial Reporting", "Market Research"],
+  "Marketing": ["Digital Marketing", "Brand Strategy", "Content Strategy", "D2C Marketing", "Campaign Planning"],
+  "Business": ["B2B Client Management", "Business Development", "Stakeholder Management", "Bookkeeping", "Business Analysis"],
+  "Tools": ["Zoho CRM", "MS Office Suite", "Google Analytics", "Canva", "SQL (Basic)"],
+};
+
+const EXPERIENCES = [
+  { role: "B2B Client Relations Executive", company: "Sarin Technologies Pvt. Ltd.", period: "2023 – 2024", points: ["Managed a portfolio of enterprise B2B clients as primary point of contact", "Coordinated cross-functional teams to ensure timely delivery and satisfaction", "Documented client requirements and mapped stakeholder workflows"] },
+  { role: "Marketing Intern", company: "Cassidy Cosmetics", period: "2024 – 2025", points: ["Developed digital marketing campaigns and tracked performance metrics", "Built a full-year Excel financial tracker and formal P&L for FY 2025–2026", "Assisted in brand positioning and content strategy for D2C launches"] },
+  { role: "Data Analytics Intern", company: "Codec Technologies Pvt. Ltd.", period: "Dec 2025 – Jan 2026", points: ["Completed 1-month AICTE & ICAC approved internship program", "Analyzed business datasets and produced visual dashboards for reporting", "Applied data cleaning and transformation techniques to improve accuracy"] },
+  { role: "Bookkeeper", company: "Sankalp Creations", period: "2022 – 2023", points: ["Maintained accurate financial records and reconciled monthly accounts", "Prepared financial summaries and reports for management review"] },
+];
+
+const CERTIFICATIONS = [
+  {
+    name: "Data Analytics Job Simulation",
+    issuer: "Deloitte Australia × Forage",
+    year: "Jun 2026",
+    tags: ["Data Analysis", "Forensic Technology"],
+    link: "https://www.theforage.com/completion-certificates/9PBTqmSxAf6zZTseP/io9DzWKe3PTsiS6GG_9PBTqmSxAf6zZTseP_6a382a9021444f205068e5dc_1782104661706_completion_certificate.pdf",
+    color: "#1a8cff",
+    icon: "D",
+  },
+  {
+    name: "PowerBI for Beginners: Sales Data Exploration",
+    issuer: "Coursera",
+    year: "Jun 2026",
+    tags: ["Power BI", "Data Viz"],
+    link: "https://coursera.org/verify/9ZWGCLIR314E",
+    color: "#0056d2",
+    icon: "C",
+  },
+  {
+    name: "Data Analytics Training",
+    issuer: "Codec Technologies × ICAC",
+    year: "Jan 2026",
+    tags: ["ICAC Recognized", "ISO Certified"],
+    link: null,
+    color: "#7c3aed",
+    icon: "CT",
+  },
+  {
+    name: "Certificate of Internship – Data Analytics",
+    issuer: "Codec Technologies × NIP",
+    year: "Jan 2026",
+    tags: ["AICTE Approved", "National Internship Portal"],
+    link: null,
+    color: "#059669",
+    icon: "NI",
+  },
+];
+
+const PROJECTS = [
+  { title: "Polorizer", sub: "Brand & Digital Marketing Analysis", desc: "End-to-end brand audit of an Indian D2C fragrance brand — personas, competitive positioning, a five-pillar strategy, and a 90-day roadmap." },
+  { title: "The Ledger Room", sub: "Personal Finance Dashboard", desc: "Financial analysis dashboard tracking Indian equity and debt markets, mutual funds, thematic sector bets, and individual equity positions." },
+  { title: "Cassidy Financials", sub: "Financial Reporting & Analysis", desc: "Full FY 2025–2026 financial tracker with projected figures, P&L documentation, and variance analysis for a D2C cosmetics brand." },
+];
+
+function ParticleField() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let w = canvas.width = canvas.offsetWidth;
+    let h = canvas.height = canvas.offsetHeight;
+    const particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.3,
+    }));
+    let animId;
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.25)";
+        ctx.fill();
+      });
+      particles.forEach((a, i) => {
+        particles.slice(i + 1).forEach(b => {
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(255,255,255,${0.06 * (1 - dist / 100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        });
+      });
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+    const resize = () => { w = canvas.width = canvas.offsetWidth; h = canvas.height = canvas.offsetHeight; };
+    window.addEventListener("resize", resize);
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} />;
+}
+
+function ArcAnimation() {
+  const count = 28;
+  return (
+    <div style={{ position: "relative", width: "100%", height: 280, perspective: 900, perspectiveOrigin: "50% 60%" }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {Array.from({ length: count }).map((_, i) => {
+          const angle = (i / (count - 1)) * 180 - 90;
+          const rad = (angle * Math.PI) / 180;
+          const radius = 210;
+          const x = Math.sin(rad) * radius;
+          const y = -Math.cos(rad) * radius * 0.35;
+          const tiltX = -angle * 0.55;
+          return (
+            <div key={i} style={{
+              position: "absolute", width: 9, height: 52,
+              background: `rgba(255,255,255,${0.1 + (i / count) * 0.6})`,
+              borderRadius: 2,
+              transform: `translate(${x}px, ${y}px) rotateX(${tiltX}deg) rotateZ(${angle}deg)`,
+              animation: `tileGlow 3s ease-in-out ${i * 0.06}s infinite alternate`,
+              boxShadow: "0 0 6px rgba(255,255,255,0.06)",
+            }} />
+          );
+        })}
+        <div style={{
+          position: "absolute", width: 44, height: 44, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.05) 70%)",
+          boxShadow: "0 0 50px 16px rgba(255,255,255,0.2)",
+          transform: "translate(135px, -66px)",
+          animation: "orbPulse 3s ease-in-out infinite alternate",
+        }} />
+      </div>
+    </div>
+  );
+}
+
+function CertCard3D({ cert, index }) {
+  const cardRef = useRef(null);
+  const [rot, setRot] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);
+    const dy = (e.clientY - cy) / (rect.height / 2);
+    setRot({ x: -dy * 12, y: dx * 12 });
+  };
+
+  const handleMouseLeave = () => {
+    setRot({ x: 0, y: 0 });
+    setHovered(false);
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        perspective: 800,
+        cursor: cert.link ? "pointer" : "default",
+      }}
+      onClick={() => cert.link && window.open(cert.link, "_blank")}
+    >
+      <div style={{
+        background: "#0d0d0d",
+        border: `1px solid ${hovered ? cert.color + "55" : "rgba(255,255,255,0.07)"}`,
+        borderRadius: 16,
+        padding: "28px 24px",
+        transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg) ${hovered ? "translateZ(16px) scale(1.02)" : "translateZ(0) scale(1)"}`,
+        transformStyle: "preserve-3d",
+        transition: hovered ? "transform 0.1s ease, border-color 0.3s, box-shadow 0.3s" : "transform 0.5s ease, border-color 0.3s, box-shadow 0.3s",
+        boxShadow: hovered ? `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${cert.color}22` : "0 4px 20px rgba(0,0,0,0.3)",
+        position: "relative",
+        overflow: "hidden",
+        minHeight: 180,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}>
+        {/* 3D shine layer */}
+        <div style={{
+          position: "absolute", inset: 0, borderRadius: 16,
+          background: hovered
+            ? `radial-gradient(circle at ${50 + rot.y * 2}% ${50 - rot.x * 2}%, rgba(255,255,255,0.06) 0%, transparent 60%)`
+            : "none",
+          pointerEvents: "none", transition: "background 0.1s",
+        }} />
+        {/* Colored top bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, borderRadius: "16px 16px 0 0", background: cert.color, opacity: hovered ? 1 : 0.5, transition: "opacity 0.3s" }} />
+
+        <div>
+          {/* Icon */}
+          <div style={{
+            width: 42, height: 42, borderRadius: 10,
+            background: cert.color + "18",
+            border: `1px solid ${cert.color}33`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "'DM Mono', monospace", fontSize: "0.75rem", fontWeight: 500,
+            color: cert.color, marginBottom: 18,
+            transform: "translateZ(20px)",
+          }}>{cert.icon}</div>
+
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.25)", letterSpacing: "0.15em", marginBottom: 10 }}>{cert.year}</p>
+          <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: "0.95rem", color: "#fff", lineHeight: 1.35, marginBottom: 8 }}>{cert.name}</h3>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.8rem", marginBottom: 14 }}>{cert.issuer}</p>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {cert.tags.map(t => (
+              <span key={t} style={{
+                background: cert.color + "12", border: `1px solid ${cert.color}30`,
+                color: cert.color, fontSize: "0.68rem", padding: "3px 10px", borderRadius: 4,
+                fontFamily: "'DM Mono', monospace",
+              }}>{t}</span>
+            ))}
+          </div>
+        </div>
+
+        {cert.link && (
+          <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "0.75rem", fontFamily: "'DM Mono', monospace", transition: "color 0.2s", ...(hovered && { color: cert.color }) }}>
+              View Certificate ↗
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FloatingOrb({ size, x, y, color, blur, opacity }) {
+  return (
+    <div style={{
+      position: "absolute", width: size, height: size, borderRadius: "50%",
+      background: color, filter: `blur(${blur}px)`, opacity,
+      left: x, top: y, pointerEvents: "none",
+    }} />
+  );
+}
+
+function Section3DCard({ children, style = {} }) {
+  const ref = useRef(null);
+  const [tilt, setTilt] = useState({ x: 0, y: 0, shine: { x: 50, y: 50 } });
+
+  const onMove = (e) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const dx = (e.clientX - rect.left) / rect.width;
+    const dy = (e.clientY - rect.top) / rect.height;
+    setTilt({ x: (dy - 0.5) * -6, y: (dx - 0.5) * 6, shine: { x: dx * 100, y: dy * 100 } });
+  };
+  const onLeave = () => setTilt({ x: 0, y: 0, shine: { x: 50, y: 50 } });
+
+  return (
+    <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ perspective: 1000, ...style }}>
+      <div style={{
+        transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        transition: "transform 0.15s ease",
+        transformStyle: "preserve-3d",
+        position: "relative",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", zIndex: 2,
+          background: `radial-gradient(circle at ${tilt.shine.x}% ${tilt.shine.y}%, rgba(255,255,255,0.04) 0%, transparent 55%)`,
+        }} />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const NAV = ["about", "skills", "experience", "certifications", "projects", "contact"];
+
+export default function Portfolio() {
+  const [active, setActive] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const s = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", s);
+    return () => window.removeEventListener("scroll", s);
+  }, []);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+    }, { threshold: 0.3 });
+    NAV.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, []);
+
+  const go = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
+
+  return (
+    <div style={{ background: "#000", color: "#fff", fontFamily: "'Inter', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #222; }
+        @keyframes tileGlow { 0% { opacity: 0.35; } 100% { opacity: 1; } }
+        @keyframes orbPulse { 0% { transform: translate(135px,-66px) scale(0.9); opacity: 0.7; } 100% { transform: translate(135px,-66px) scale(1.1); opacity: 1; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        .nav-btn { background: none; border: none; color: rgba(255,255,255,0.38); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; letter-spacing: 0.06em; padding: 6px 0; transition: color 0.2s; }
+        .nav-btn:hover, .nav-btn.act { color: #fff; }
+        .eyebrow { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.28); margin-bottom: 12px; }
+        .headline { font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: clamp(1.9rem,3.8vw,2.8rem); color: #fff; line-height: 1.15; }
+        .body-txt { color: rgba(255,255,255,0.42); font-size: 0.9rem; line-height: 1.8; }
+        .pill { background: #fff; color: #000; border: none; border-radius: 50px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+        .pill:hover { opacity: 0.85; transform: scale(0.97); }
+        .ghost { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); border-radius: 50px; padding: 11px 26px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+        .ghost:hover { color: #fff; border-color: rgba(255,255,255,0.45); }
+        .chip { display: inline-block; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 5px 13px; font-family: 'DM Mono', monospace; font-size: 0.74rem; color: rgba(255,255,255,0.62); transition: all 0.2s; }
+        .chip:hover { background: rgba(255,255,255,0.09); color: #fff; border-color: rgba(255,255,255,0.18); }
+        .exp-card { background: #0d0d0d; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 28px 30px; transition: border-color 0.25s, box-shadow 0.25s; }
+        .exp-card:hover { border-color: rgba(255,255,255,0.14); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+        .skill-card { background: #0d0d0d; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 24px 26px; transition: border-color 0.25s; }
+        .skill-card:hover { border-color: rgba(255,255,255,0.13); }
+        @media (max-width: 768px) {
+          .two-col { grid-template-columns: 1fr !important; }
+          .cert-grid { grid-template-columns: 1fr !important; }
+          .hide-mob { display: none !important; }
+          .show-mob { display: flex !important; }
+        }
+      `}</style>
+
+      {/* NAV */}
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: scrolled ? "rgba(0,0,0,0.88)" : "transparent",
+        backdropFilter: scrolled ? "blur(18px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.04)" : "none",
+        transition: "all 0.3s", padding: "0 clamp(20px,5vw,72px)",
+      }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.85rem", color: "rgba(255,255,255,0.5)", letterSpacing: "0.04em" }}>
+            sai<span style={{ color: "#fff" }}>.dev</span>
+          </span>
+          <div className="hide-mob" style={{ display: "flex", gap: 34 }}>
+            {NAV.map(s => (
+              <button key={s} className={`nav-btn ${active === s ? "act" : ""}`} onClick={() => go(s)}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
+          <button className="show-mob" style={{ display: "none", background: "none", border: "none", cursor: "pointer", flexDirection: "column", gap: 4, padding: 4 }} onClick={() => setMenuOpen(m => !m)}>
+            {[0,1,2].map(i => <span key={i} style={{ display: "block", width: 20, height: 1.5, background: "#fff", borderRadius: 1 }} />)}
+          </button>
+        </div>
+        {menuOpen && (
+          <div style={{ background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.05)", padding: "20px clamp(20px,5vw,72px)", display: "flex", flexDirection: "column", gap: 20 }}>
+            {NAV.map(s => <button key={s} className="nav-btn" style={{ textAlign: "left", fontSize: "1rem" }} onClick={() => go(s)}>{s.charAt(0).toUpperCase() + s.slice(1)}</button>)}
+          </div>
+        )}
+      </nav>
+
+      {/* HERO */}
+      <section style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "120px clamp(20px,5vw,72px) 60px", maxWidth: 1080, margin: "0 auto", position: "relative" }}>
+        <ArcAnimation />
+        <div style={{ marginTop: 40, animation: "fadeUp 0.9s ease both" }}>
+          <p className="eyebrow">Available · Surat, Gujarat, India</p>
+          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: "clamp(2.8rem,6.5vw,5rem)", lineHeight: 1.07, color: "#fff", marginBottom: 20 }}>
+            Sai Vigneshwar<br />
+            <span style={{ color: "rgba(255,255,255,0.22)" }}>Anabathula</span>
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.38)", fontSize: "clamp(0.9rem,1.8vw,1.1rem)", maxWidth: 480, lineHeight: 1.72, marginBottom: 40 }}>
+            Business analyst, marketer, and data practitioner.<br />BBA candidate at VNSGU, Surat.
+          </p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <button className="pill" onClick={() => go("contact")}>Get in Touch</button>
+            <button className="ghost" onClick={() => go("experience")}>View Work</button>
+          </div>
+        </div>
+        {/* Ambient orbs */}
+        <FloatingOrb size={320} x="-80px" y="60px" color="rgba(124,58,237,0.07)" blur={80} opacity={1} />
+        <FloatingOrb size={240} x="60%" y="30%" color="rgba(16,185,129,0.05)" blur={80} opacity={1} />
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" style={{ padding: "90px clamp(20px,5vw,72px)", borderTop: "1px solid rgba(255,255,255,0.04)", position: "relative" }}>
+        <FloatingOrb size={400} x="70%" y="-40px" color="rgba(59,130,246,0.05)" blur={100} opacity={1} />
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">About</p>
+          <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "start" }}>
+            <div>
+              <h2 className="headline" style={{ marginBottom: 22 }}>The person<br />behind the work</h2>
+              <p className="body-txt" style={{ marginBottom: 14 }}>Final-year BBA student at Maniba College of Business Administration (VNSGU). My background started in Electrical & Electronics Engineering — that pivot shaped how I think: systematically, with data, but always with a commercial eye.</p>
+              <p className="body-txt">I've built real experience across B2B client management, bookkeeping, data analytics, and D2C marketing. Targeting roles where I can own problems end-to-end, not just support them.</p>
+            </div>
+            <Section3DCard>
+              <div style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, overflow: "hidden" }}>
+                {[["Education", "BBA — Maniba College, VNSGU (2025)"], ["Open To", "Business Analysis · Marketing · Data Analytics"], ["Location", "Surat, Gujarat, India"], ["Languages", "English · Gujarati · Hindi"]].map(([k, v], i) => (
+                  <div key={k} style={{ display: "flex", padding: "18px 24px", borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.24)", textTransform: "uppercase", letterSpacing: "0.1em", minWidth: 100, paddingTop: 2 }}>{k}</span>
+                    <span style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.86rem" }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </Section3DCard>
+          </div>
+        </div>
+      </section>
+
+      {/* SKILLS */}
+      <section id="skills" style={{ padding: "90px clamp(20px,5vw,72px)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">Skills</p>
+          <h2 className="headline" style={{ marginBottom: 44 }}>What I bring</h2>
+          <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {Object.entries(SKILLS).map(([cat, items]) => (
+              <Section3DCard key={cat}>
+                <div className="skill-card">
+                  <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.66rem", color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 16 }}>{cat}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {items.map(s => <span key={s} className="chip">{s}</span>)}
+                  </div>
+                </div>
+              </Section3DCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* EXPERIENCE */}
+      <section id="experience" style={{ padding: "90px clamp(20px,5vw,72px)", borderTop: "1px solid rgba(255,255,255,0.04)", position: "relative" }}>
+        <FloatingOrb size={350} x="-100px" y="20%" color="rgba(124,58,237,0.06)" blur={100} opacity={1} />
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">Experience</p>
+          <h2 className="headline" style={{ marginBottom: 44 }}>Where I've worked</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {EXPERIENCES.map((e, i) => (
+              <Section3DCard key={i}>
+                <div className="exp-card">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+                    <div>
+                      <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: "0.98rem", color: "#fff" }}>{e.role}</h3>
+                      <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.82rem", marginTop: 4 }}>{e.company}</p>
+                    </div>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.68rem", color: "rgba(255,255,255,0.24)" }}>{e.period}</span>
+                  </div>
+                  <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
+                    {e.points.map((p, j) => (
+                      <li key={j} style={{ display: "flex", gap: 12, color: "rgba(255,255,255,0.46)", fontSize: "0.86rem", lineHeight: 1.65 }}>
+                        <span style={{ color: "rgba(255,255,255,0.18)", flexShrink: 0 }}>—</span>{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Section3DCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CERTIFICATIONS */}
+      <section id="certifications" style={{ padding: "90px clamp(20px,5vw,72px)", borderTop: "1px solid rgba(255,255,255,0.04)", position: "relative" }}>
+        <FloatingOrb size={400} x="60%" y="0" color="rgba(16,185,129,0.05)" blur={100} opacity={1} />
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">Certifications</p>
+          <h2 className="headline" style={{ marginBottom: 44 }}>Credentials</h2>
+          <div className="cert-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+            {CERTIFICATIONS.map((c, i) => <CertCard3D key={i} cert={c} index={i} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* PROJECTS */}
+      <section id="projects" style={{ padding: "90px clamp(20px,5vw,72px)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">Projects</p>
+          <h2 className="headline" style={{ marginBottom: 44 }}>Selected work</h2>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {PROJECTS.map((p, i) => (
+              <div key={i} style={{ padding: "30px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap" }}>
+                <div style={{ minWidth: 160 }}>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{String(i + 1).padStart(2, "0")}</span>
+                  <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: "1.05rem", color: "#fff", marginTop: 8 }}>{p.title}</h3>
+                  <p style={{ color: "rgba(255,255,255,0.27)", fontSize: "0.76rem", marginTop: 4 }}>{p.sub}</p>
+                </div>
+                <p style={{ color: "rgba(255,255,255,0.42)", fontSize: "0.87rem", lineHeight: 1.78, flex: 1, minWidth: 220, paddingTop: 22 }}>{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section id="contact" style={{ padding: "100px clamp(20px,5vw,72px) 130px", borderTop: "1px solid rgba(255,255,255,0.04)", position: "relative" }}>
+        <FloatingOrb size={500} x="30%" y="-60px" color="rgba(124,58,237,0.07)" blur={120} opacity={1} />
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <p className="eyebrow">Contact</p>
+          <h2 className="headline" style={{ marginBottom: 18, maxWidth: 480 }}>Open to the right opportunity</h2>
+          <p className="body-txt" style={{ maxWidth: 460, marginBottom: 44 }}>Looking for roles in Business Analysis, Marketing, and Data Analytics. If you have a problem that needs clear thinking and data — reach out.</p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <a href="mailto:Saivigneshwar99@gmail.com" style={{ textDecoration: "none" }}>
+              <button className="pill">Saivigneshwar99@gmail.com</button>
+            </a>
+            <a href="https://www.linkedin.com/in/sai-vigneshwar-anabathula" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+              <button className="ghost">LinkedIn ↗</button>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.04)", padding: "22px clamp(20px,5vw,72px)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.78rem", color: "rgba(255,255,255,0.2)" }}>sai.dev</span>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.72rem", color: "rgba(255,255,255,0.15)" }}>© 2026</span>
+      </footer>
+    </div>
+  );
+}
